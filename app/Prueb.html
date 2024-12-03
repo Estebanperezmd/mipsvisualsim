@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulación de MIPS en D3.js</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        svg {
+            border: 1px solid #ccc;
+        }
+        .node {
+            cursor: pointer;
+        }
+        .node text {
+            font-size: 10px;
+            pointer-events: none;
+            font-weight: normal; 
+            font-family: Arial;
+            fill: rgb(21, 255, 255);
+        }
+        .box {
+            
+            fill-opacity: 0.5; /* Opcional: para que los cuadros sean más visibles */
+            stroke: darkcyan;
+            stroke-opacity: 0.5;
+        }
+    </style>
+        <link rel="stylesheet" href="prueb.css">
+</head>
+<body>
+
+    
+
+    <script >
+        
+        const data = {
+
+            Registros: [
+            {id: "zero", Slot: 0, Data: "0x00000000"},
+            {id: "at", Slot: 1, Data: "0x00000000"},
+            {id: "v0", Slot: 2, Data: "0x00000000"},
+            {id: "v1", Slot: 3, Data: "0x00000000"},
+            {id: "a0", Slot: 4, Data: "0x00000000"},
+            {id: "a1", Slot: 5, Data: "0x00000000"},
+            {id: "a2", Slot: 6, Data: "0x00000000"},
+            {id: "a3", Slot: 7, Data: "0x00000000"},
+            {id: "t0", Slot: 8, Data: "0x00000000"},
+            {id: "t1", Slot: 9, Data: "0x00000000"},
+            {id: "t2", Slot: 10, Data: "0x00000000"},
+            {id: "t3", Slot: 11, Data: "0x00000000"},
+            {id: "t4", Slot: 12, Data: "0x00000000"},
+            {id: "t5", Slot: 13, Data: "0x00000000"},
+            {id: "t6", Slot: 14, Data: "0x00000000"},
+            {id: "t7", Slot: 15, Data: "0x00000000"},
+            {id: "s0", Slot: 16, Data: "0x00000000"},
+            {id: "s1", Slot: 17, Data: "0x00000000"},
+            {id: "s2", Slot: 18, Data: "0x00000000"},
+            {id: "s3", Slot: 19, Data: "0x00000000"},
+            {id: "s4", Slot: 20, Data: "0x00000000"},
+            {id: "s5", Slot: 21, Data: "0x00000000"},
+            {id: "s6", Slot: 22, Data: "0x00000000"},
+            {id: "s7", Slot: 23, Data: "0x00000000"},
+            {id: "t8", Slot: 24, Data: "0x00000000"},
+            {id: "t9", Slot: 25, Data: "0x00000000"},
+            {id: "k0", Slot: 26, Data: "0x00000000"},
+            {id: "k1", Slot: 27, Data: "0x00000000"},
+            {id: "gp", Slot: 28, Data: "0x00000000"},
+            {id: "sp", Slot: 29, Data: "0x00000000"},
+            {id: "fp", Slot: 30, Data: "0x00000000"},
+            {id: "ra", Slot: 31, Data: "0x00000000"}
+            ],
+
+            nodes: [
+                // PC
+                    //In
+                    { id: "JumpPC", size: 20, parent: "PC", xx:20, yy:20, Estados: "0", Name: "Jump"},
+                    { id: "JumpAddPC", size: 20, parent: "PC", xx:20, yy:50, Estados: "0"},
+                    { id: "ImmPC", size: 20, parent: "PC", xx:20, yy:80, Estados: "0"},
+                    { id: "BnePC", size: 20, parent: "PC", xx:20, yy:110, Estados: "0"},
+                    { id: "BeqPC", size: 20, parent: "PC", xx:20, yy:140, Estados: "0"},
+                    { id: "ZeroPC", size: 20, parent: "PC", xx:20, yy:170, Estados: "0"},
+                    //Out
+                    { id: "PC1Address", size: 20, parent: "PC", xx:155, yy:20, Estados: "0"},
+                // Memory 1
+                    // in 
+                    { id: "AddressMem1", size: 20, parent: "Memory1", xx:15, yy:20, Estados: "0"},
+                    //Out
+                    {id:"DataMem1", size: 20, parent: "Memory1", xx:235, yy:20, Estados: "0"},
+                //ID
+                    //in
+                    { id: "Instruction", size: 20, parent: "ID", xx:20, yy:20, Estados: "0"},
+                    //out
+                    { id: "JumpAdd", size: 20, parent: "ID", xx:180, yy:30, Estados: "0"},
+                    { id: "Immediate", size: 20, parent: "ID", xx:180, yy:60, Estados: "0"},
+                    { id: "Func", size: 20, parent: "ID", xx:180, yy:90, Estados: "0"},
+                    { id: "Sham", size: 20, parent: "ID", xx:180, yy:120, Estados: "0"},
+                    { id: "rd", size: 20, parent: "ID", xx:180, yy:150, Estados: "0"},
+                    { id: "Rs", size: 20, parent: "ID", xx:180, yy:180, Estados: "0"},
+                    { id: "Rt", size: 20, parent: "ID", xx:180, yy:210, Estados: "0"},
+                    { id: "OPCode", size: 20, parent: "ID", xx:180, yy:240, Estados: "0"},
+                // Unit Control 
+                    //In
+                    { id: "OPcode", size: 20, parent: "Unit Control", xx:20, yy:20, Estados: "0"},
+                    //Out
+                    { id: "Regdst", size: 20, parent: "Unit Control", xx:180, yy:20, Estados: "0"},
+                    { id: "RegWrite", size: 20, parent: "Unit Control", xx:180, yy:50, Estados: "0"},
+                    { id: "Jump", size: 20, parent: "Unit Control", xx:180, yy:80, Estados: "0"},
+                    { id: "Beq", size: 20, parent: "Unit Control", xx:180, yy:110, Estados: "0"},
+                    { id: "Bne", size: 20, parent: "Unit Control", xx:180, yy:140, Estados: "0"},
+                    { id: "Alusrc", size: 20, parent: "Unit Control", xx:180, yy:170, Estados: "0"},
+                    { id: "MemToReg", size: 20, parent: "Unit Control", xx:180, yy:200, Estados: "0"},
+                    { id: "MemRead", size: 20, parent: "Unit Control", xx:180, yy:230, Estados: "0"},
+                    { id: "MemWrite", size: 20, parent: "Unit Control", xx:180, yy:260, Estados: "0"},
+                    { id: "AluOP1", size: 20, parent: "Unit Control", xx:180, yy:290, Estados: "0"},
+                    { id: "AluOP2", size: 20, parent: "Unit Control", xx:180, yy:320, Estados: "0"},
+                // ALU Unit Control
+                    //In
+                    { id: "func", size: 20, parent: "Alu Unit Control", xx:20, yy: 20, Estados: "0"},
+                    { id: "Aluop1", size: 20, parent: "Alu Unit Control", xx:20, yy:50, Estados: "0"},
+                    { id: "Aluop2", size: 20, parent: "Alu Unit Control", xx:20, yy:80, Estados: "0"},
+                    //Out
+                    { id: "Out", size: 20, parent: "Alu Unit Control", xx:180, yy:20, Estados: "0"},
+                    
+                // Unit registre (ureg)
+                    //in
+                    { id: "Regwrite", size: 20, parent: "Unit registre", xx:20, yy:20, Estados: "0"},
+                    { id: "rs", size: 20, parent: "Unit registre", xx:20, yy:50, Estados: "0"},
+                    { id: "rt", size: 20, parent: "Unit registre", xx:20, yy:80, Estados: "0"},
+                    { id: "DataIn", size: 20, parent: "Unit registre", xx:20, yy:110, Estados: "0"},
+                    { id: "BusWrite", size: 20, parent: "Unit registre", xx:20, yy:140, Estados: "0"},
+                    //Out
+                    { id: "BusA", size: 20, parent: "Unit registre", xx:180, yy:20, Estados: "0"},
+                    { id: "BusB", size: 20, parent: "Unit registre", xx:180, yy:50, Estados: "0"},
+                    //MUX: rt_rs
+                        //in
+                        { id: "Muxrt:0", size: 20, parent: "MUX:rtrs", xx:20, yy:20, Estados: "0"},
+                        { id: "Muxrs:1", size: 20, parent: "MUX:rtrs", xx:20, yy:50, Estados: "0",Name:"Muxrd"},
+                        { id: "SelectorRtRs", size: 20, parent: "MUX:rtrs", xx:20, yy:80, Estados: "0"},
+                        //Out
+                        { id: "OutMuxRtRs", size: 20, parent: "MUX:rtrs", xx:60, yy:40, Estados: "0"},
+
+
+
+                //Alu:
+                    //in
+                    { id: "BusAIn", size: 20, parent: "ALU", xx:20, yy:20, Estados: "0"},
+                    { id: "BusBIn", size: 20, parent: "ALU", xx:20, yy:50, Estados: "0"},
+                    { id: "AluControl", size: 20, parent: "ALU", xx:20, yy:80, Estados: "0"},
+                    //out
+                    { id: "AluResult", size: 20, parent: "ALU", xx:180, yy:20, Estados: "0"},
+                    { id: "Zero", size: 20, parent: "ALU", xx:180, yy:50, Estados: "0"},
+
+                    //MUX:Alu : 
+                        //in
+                        { id: "Mux:0", size: 20, parent: "MUX:Alu", xx:20, yy:20, Estados: "0"},
+                        { id: "Mux:1", size: 20, parent: "MUX:Alu", xx:20, yy:50, Estados: "0"},
+                        { id: "Selector", size: 20, parent: "MUX:Alu", xx:20, yy:80, Estados: "0"},
+                        //Out
+                        { id: "OutMuxAlu", size: 20, parent: "MUX:Alu", xx:70, yy:40, Estados: "0"},
+                // Memory 2
+                    //in
+                    { id: "AddresMem2", size: 20, parent: "Memory2", xx:20, yy:20, Estados: "0"},
+                    { id: "Rewrite", size: 20, parent: "Memory2", xx:20, yy:50, Estados: "0"},
+                    { id: "DataInMem", size: 20, parent: "Memory2", xx:20, yy:80, Estados: "0"},
+                    // out
+                    { id: "DataOutMem", size: 20, parent: "Memory2", xx:230, yy:20, Estados: "0"},
+                    // Mux:Memory2
+                            { id: "MuxAluResult:0", size: 20, parent: "MUX:Memory2", xx:20, yy:20, Estados: "0"},
+                            { id: "MuxData:1", size: 20, parent: "MUX:Memory2", xx:20, yy:50, Estados: "0"},
+                            { id: "SelectorMem2", size: 20, parent: "MUX:Memory2", xx:20, yy:80, Estados: "0"},
+                            //Out
+                            { id: "OutMuxMem2", size: 20, parent: "MUX:Memory2", xx:60, yy:40, Estados: "0"},
+                ],
+             
+            boxes: [
+                // Fase 1
+                { id: "PC", sizex: 170, sizey: 190, x: 10, y: 250, clock: false, clockBlock: false, reset: false, Registro: 0},
+                { id: "Memory1", sizex: 250, sizey: 250, x: 300, y: 200},
+                { id: "ID", sizex: 200, sizey: 300, x: 630, y: 210},
+                // Fase 2
+                { id: "Unit Control", sizex: 200, sizey: 340, x: 900, y: 400},
+                { id: "Alu Unit Control", sizex: 200, sizey: 100, x: 1200, y: 640},
+                { id: "Unit registre", sizex: 200, sizey: 200, x: 1400, y: 100, clock: false, clockBlock: false, reset: false},
+                { id: "MUX:rtrs", sizex: 80, sizey: 100, x: 1200, y: 150},
+                // Fase 3
+                { id: "ALU", sizex: 200, sizey: 100, x: 1800, y: 200},
+                { id: "MUX:Alu", sizex: 80, sizey: 100, x: 1600, y: 400},
+                // Fase 4
+                { id: "Memory2", sizex: 250, sizey: 250, x: 2300, y: 200, clock: false, clockBlock: false, reset: false},
+                { id: "MUX:Memory2", sizex: 80, sizey: 100, x: 2700, y: 200}
+            ],
+            links: [
+                // Example:
+                // { source: "Nombre del nodo inicial", target: "nombre del nodo objectivo", path: [{ H: 50 }, { V: 100 }] # donde H es horizontal y V: es vertical  (El numero representa el numero de recorrido en x o y, sea del eje horizona o vertical, la cantidad de lista es indeterminada si lo deseas)},
+
+                //PC - Memory1
+                { source: "PC1Address", target: "AddressMem1", path: [{ H: 50 }, { V: -50 }]},
+                //Memory1 - ID
+                { source: "DataMem1", target: "Instruction", path: [{ H: 30 }, { V: 10 }]},
+                //ID - Unit Control
+                { source: "OPCode", target: "OPcode", path: [{ H: 70 }, { V: -30 }]},
+                { source: "Immediate", target: "Mux:1", path: [{ H: 70 }, { V: 20 }, { H: 350}, { V: 30}, { H: 300}, { V: 130}]},
+                // Unit Control - ALU Unit Control
+                { source: "Func", target: "func", path: [{ H: 345 }, { V: 360 }]},
+                { source: "AluOP1", target: "Aluop1" },
+                { source: "AluOP2", target: "Aluop2"},
+                // ID - Unit Registre (ureg)
+                { source: "Rs", target: "rs", path: [{ H: 40 }, { V: -50 }, { H: 490 }, { V: -190 }]},
+                { source: "rd", target: "Muxrs:1", path: [{ H: 30 }, { V: -50 }, { H: 340 }, { V: -110 }]},
+                { source: "Rt", target: "rt", path: [{ H: 60 }, { V: -50 }, { H: 490 }, { V: -190 }]},
+                { source: "Rt", target: "Muxrt:0", path: [{ H: 60 }, { V: -50 }, { H: 300 }, { V: -200 }]},
+                { source: "OutMuxRtRs", target: "BusWrite", path: [{ H: 30 }, { V: 50 }]},
+                { source: "Out", target: "AluControl", path: [{ H: 350 }, { V: -380 }]},
+                { source: "BusA", target: "BusAIn", path: [{ H: 100 }, { V: 100 }]},
+                { source: "BusB", target: "Mux:0", path: [{ H: 30 }, { V: 230 }, { H: -40}, { V: 40}]},
+                { source: "BusB", target: "DataInMem", path: [{ H: 550 }, { V: 130 }]},
+                { source: "Alusrc", target: "Selector", path: [{ H: 130 }, { V: -90 }]},
+                { source: "OutMuxAlu", target: "BusBIn", path: [{ H: 30 }, { V: -190 }]},
+                { source: "Regdst", target: "SelectorRtRs", path: [{ H: 60 }, { V: -190 }]},
+                { source: "RegWrite", target: "Regwrite", path: [{ H: 30 }, { V: -330 }]},
+                { source: "AluResult", target: "AddresMem2"},
+                { source: "MemToReg", target: "SelectorMem2", path: [{ H: 1600 }, { V: -320 }]},
+                { source: "MemWrite", target: "Rewrite", path: [{ H: 65 }, { V: -30 }, { H: 1100 }, { V: -380 },]},
+                { source: "DataOutMem", target: "MuxData:1", path: [{ H: 30 }, { V: 30 }]},
+                { source: "AluResult", target: "MuxAluResult:0", path: [{ H: 60 }, { V: -50 }, { H: 600 }, { V: 50 }]},
+                { source: "OutMuxMem2", target: "DataIn", path: [{ H: 40 }, { V: -170 }, { H: -1410 }, { V: 140 }]},
+
+                { source: "Jump", target: "JumpPC", path: [{ H: 25 }, { V: 280 }, { H: -1130 }, { V: -490 }]},
+                { source: "JumpAdd", target: "JumpAddPC", path: [{ H: 32 }, { V: -80 }, { H: -900 }, { V: 140 }]},
+                { source: "Beq", target: "BeqPC", path: [{ H: 40 }, { V: 280 }, { H: -1250 }, { V: -400 }]},
+                { source: "Bne", target: "BnePC", path: [{ H: 55 }, { V: 280 }, { H: -1300 }, { V: -460 }]},
+                { source: "Zero", target: "ZeroPC", path: [{ H: 40 }, { V: 525 }, { H: -2100 }, { V: -355 }]},
+                { source: "Immediate", target: "ImmPC", path: [{ H: 60 }, { V: -150 }, { H: -1000 }, { V: 210 }]},
+            ]
+        };
+
+
+        
+        let width =  window.innerWidth;
+        let height = window.innerHeight;
+        
+        const BColor = "#fff"
+        const color = d3.scaleOrdinal(d3.schemeCategory10);
+        // Carga directamente las variables, haciendo que no dependamos muchos del data
+        const links = data.links.map(d => ({ ...d }));
+        const nodes = data.nodes.map(d => ({ ...d }));
+        const boxes = data.boxes.map(d => ({ ...d }));
+        const Registros = data.Registros.map(d => ({ ...d }));
+
+        const svg = d3.select("body").append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .style("background-color", BColor);
+        // Escucha del evento de cambio de tamaño de la ventana
+        window.addEventListener("resize", () => {
+            // Actualiza las dimensiones de la ventana
+            width = window.innerWidth;
+            height = window.innerHeight;
+
+            // Ajusta el tamaño del SVG (si es necesario)
+            svg.attr("width", width).attr("height", height);
+
+            // Ajusta el zoom para que el contenido se mantenga proporcional
+            //zoom.translateTo(svg, 0, 0); // Resetea la posición de zoom si es necesario
+            //zoom.scaleTo(svg, 1); // Resetea la escala si es necesario
+        });
+        const mainGroup = svg.append("g");
+       
+        // Dibuja los enlaces en el grupo principal
+        const linkGroup = mainGroup.append("g")
+            .attr("stroke", "#000")
+            .attr("stroke-opacity", 1.0);
+
+        
+        function HexaConvert(Num){
+            return "0x" + Num.toString(16).padStart(8, "0").toUpperCase();
+        }
+        function hexadecimalABinario(hex, bits = 32) {
+            const decimal = parseInt(hex, 16);
+            const binario = decimal.toString(2).padStart(bits, '0');;
+            return binario;
+        }       
+
+            function drawLinks() {
+                linkGroup.selectAll("path")
+                    .data(links)
+                    .join("path")
+                    .attr("fill", "none")
+                    .attr("stroke-width", 2)
+                    .attr("stroke", d => {
+                        const NodoAcess = nodes.find(n => n.id === d.source);
+                        if (NodoAcess) {
+                            const NodosourceEstado = parseInt(NodoAcess.Estados);
+                            if (NodosourceEstado === 0) return "#000";
+                            if (NodosourceEstado === 1) return "#4f0";
+                            if (NodosourceEstado >= 2) return "#7E5";
+                            return "#F00";
+                        }
+                        return "#000";
+                    })
+                    .attr("d", d => {
+                        const sourceNode = nodes.find(n => n.id === d.source);
+                        const targetNode = nodes.find(n => n.id === d.target);
+
+                        if (sourceNode && targetNode) {
+                            let path = `M ${sourceNode.x},${sourceNode.y}`; // Inicio desde la fuente
+                            let currentX = sourceNode.x;
+                            let currentY = sourceNode.y;
+
+                            if (d.path && Array.isArray(d.path)) {  // Agregar subpuntos o divisiones intermedias si es que existen, puede agregarla en links con  path: [{ H: 50 }, { V: 50 }]
+                                d.path.forEach(div => {
+                                    if (div.H !== undefined) currentX += div.H;
+                                    if (div.V !== undefined) currentY += div.V;
+                                    path += ` L ${currentX},${currentY}`;
+                                });
+                            }
+                            // Finalizar en el nodo destino
+                            path += ` L ${targetNode.x},${targetNode.y}`;
+                            return path;
+                        }
+
+                        return null;
+                    });
+            }
+
+         // Dibuja los cuadros de fondo en el grupo principal
+         const boxGroup = mainGroup.append("g")
+            .selectAll("rect")
+            .data(boxes)
+            .join("rect")
+            .attr("x", d => d.x)
+            .attr("y", d => d.y)
+            .attr("width", d => d.sizex)
+            .attr("height", d => d.sizey)
+            .attr("fill", d => d.color || "#00694D")
+            .attr("class", "box");
+
+        // Dibuja los nodos en el grupo principal
+        const nodeGroup = mainGroup.append("g")
+            .selectAll("g")
+            .data(nodes)
+            .join("g")
+            .attr("class", "node");
+
+        // Configura los atributos de los nodos y su texto
+        nodeGroup.append("rect")
+            .attr("width", d => d.size)
+            .attr("height", d => d.size)
+            .attr("fill", d => d.color || color(d.id) || "#fff")
+            .attr("transform", d => `translate(-${d.size / 2}, -${d.size / 2})`)
+            .attr("stroke", "#245") 
+            .attr("stroke-width", 1.5);
+
+        nodeGroup.append("text")
+            .attr("dy", -4)
+            .attr("x", -10)
+            .text(d => d.Name || d.id || "No-name")
+            
+        
+
+        // Posiciona los nodos dentro de sus cuadros
+        nodeGroup.each(function(d) {
+            const box = boxes.find(box => box.id === d.parent);
+            if (box) {
+                d.x = box.x + d.xx;
+                d.y = box.y + d.yy;
+            } else {
+                console.warn(`cuadro padre no encontrado. ID nodo: ${d.id}`);
+            }
+        });
+        
+        // Establece la posición inicial de los nodos
+        nodeGroup.attr("transform", d => `translate(${d.x},${d.y})`);
+
+        const initializeSimulator = (data) => {
+        data.nodes.forEach(node => node.Estados = "0");  
+        //console.log("Simulador inicializado");// Resalta los elementos visuales iniciales si es necesario
+        };
+
+        const updateNodeState = (nodeId, state) => {
+        const node = data.nodes.find(n => n.id === nodeId);
+        if (node) {
+        node.Estados = state;
+        // Actualiza visualmente el nodo (dependerá de cómo renders el DOM o canvas)           --¿Que es Canvas?
+        //console.log(`Nodo ${nodeId} actualizado a estado ${state}`);
+        }
+        };
+
+        // Ejemplo: Simulación de cambio en la posición de un nodo y actualización de líneas
+        function ActNode(nodeId, limit, update) {
+            const node = nodes.find(n => n.id === nodeId);
+            if (node) {
+                if(node.Estados >= limit){
+                    node.Estados = 0;
+                }else{
+                    node.Estados += update;
+                }
+                // Redibuja las líneas después de mover el nodo
+                drawLinks();
+                // Actualiza también la posición visual del nodo
+                nodeGroup.filter(d => d.id === nodeId)
+                    .attr("transform", d => `translate(${d.x},${d.y})`);
+            }
+        }   
+        // MEMORY RAM ---------------------------------------------------------------------------------------------------------------------------------------
+        
+        class MemoryRAM {
+            constructor(limit) {
+                this.memory = []; // La memoria empieza vacía
+                this.limit = parseInt(limit, 16); // Convertimos el límite hexadecimal a decimal
+            }
+
+            // Método para guardar un dato en memoria
+            saveData(slot, data) {
+                const slotDecimal = parseInt(slot, 16); // Convertimos el slot a decimal
+
+                if (slotDecimal > this.limit) {
+                    console.error("Error: Dirección fuera de los límites de la memoria.");
+                    return;
+                }
+
+                // Buscar si ya existe el slot
+                const existingEntry = this.memory.find(entry => entry.Slot === slot);
+
+                if (existingEntry) {
+                    // Actualizamos el dato si ya existe
+                    existingEntry.Data = data;
+                    console.log(`Actualizado: Slot ${slot} ahora tiene el dato ${data}`);
+                } else {
+                    // Agregamos un nuevo registro si no existe
+                    const newEntry = {
+                        id: `0x${slot.padStart(6, "0").toUpperCase()}`,
+                        Slot: slot.padStart(6, "0"),
+                        Data: data.padStart(8, "0") // Aseguramos formato de 8 caracteres
+                    };
+                    this.memory.push(newEntry);
+                    console.log(`Agregado: ${JSON.stringify(newEntry)}`);
+                }
+                this.sortMemoryById(); // Organiza las lista
+                this.updateMemoryView(); // Actualizamos la vista del cuadro
+            }
+
+            // Método para leer datos en un slot específico
+            readData(slot) {
+                const entry = this.memory.find(entry => entry.Slot === slot);
+                return entry ? entry.Data : "0x00000000"; // Retorna 0x00000000 si no existe
+            }
+
+            // Método para actualizar la vista en el cuadro negro
+            updateMemoryView() {
+                const memoryBox = document.getElementById("memory-box");
+                memoryBox.innerHTML = ""; // Limpiamos el contenido actual
+
+                this.memory.forEach(entry => {
+                    const memoryItem = document.createElement("div");
+                    memoryItem.className = "memory-item";
+                    memoryItem.textContent = `${entry.id}: ${entry.Data}`;
+                    memoryBox.appendChild(memoryItem);
+                });
+            }
+
+            resetMemory() {
+                this.memory = []; // Vaciamos la lista de memoria
+                console.log("Memoria reseteada.");
+                this.updateMemoryView(); // Actualizamos la vista del cuadro
+            }
+
+            sortMemoryById() {
+                this.memory.sort((a, b) => {
+                    // Convertimos los IDs de hexadecimal a decimal para compararlos correctamente
+                    const idA = parseInt(a.id, 16);
+                    const idB = parseInt(b.id, 16);
+                    return idA - idB; // Orden ascendente
+                });
+
+                console.log("Memoria organizada por ID:", this.memory);
+                this.updateMemoryView(); // Actualizamos la vista después de ordenar
+            }
+        }
+        
+        
+        //memoria RAM llamada ram
+        const ram = new MemoryRAM("FFFFF0");
+        //ram.resetMemory(); // Esto vacía la memoria y actualiza la vista
+        // Función para alternar visibilidad del cuadro
+        function toggleMemoryBox() {
+            const container = document.getElementById("memory-container");
+            const toggleButtonram = document.getElementById("memory-toggle-button");
+            
+            
+            if (container.style.display === "flex") {   
+                container.style.display = "none";
+                toggleButtonram.textContent = "Mostrar Memoria RAM";
+            } else {
+                container.style.display = "flex";
+                toggleButtonram.textContent = "Ocultar Memoria RAM";
+            }
+        }
+
+        // Creación del cuadro y botón
+        const styles = document.createElement("style");
+        styles.textContent = `
+                #memory-container {
+                    position: absolute;
+                    bottom: 7.5vh; /* % desde el fondo de la pantalla */
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 20vw; /* % del ancho de la pantalla */
+                    height: 15vh; /* % de la altura de la pantalla */
+                    background-color: rgba(0, 0, 0, 0.8); /* Fondo negro semitransparente */
+                    padding: 2vh; /* % de la altura de la pantalla como espacio interno */
+                    border-radius: 8px;
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+                    overflow-y: auto; /* Scroll vertical */
+                    overflow-x: hidden;
+                    display: none; /* Oculto inicialmente */
+                    flex-direction: column;
+                    gap: 2vh; /* Espacio entre los elementos */
+                }
+
+                #memory-container::-webkit-scrollbar {
+                    width: 1vw; /* 1% del ancho de la pantalla como el grosor del scroll */
+                }
+
+                #memory-container::-webkit-scrollbar-thumb {
+                    background: #555;
+                    border-radius: 4px;
+                }
+
+                #memory-container::-webkit-scrollbar-thumb:hover {
+                    background: #777;
+                }
+
+                .memory-item {
+                    background-color: #000; /* Fondo negro opaco */
+                    color: #fff; /* Texto blanco */
+                    padding: 1.0vh 1.0vw; /* Espaciado con base en vh y vw */
+                    border-radius: 5px;
+                    font-family: monospace;
+                    font-size: 1.2vw; /* Tamaño de fuente relativo al ancho de la pantalla */
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+                }
+
+                #memory-toggle-button {
+                    position: absolute;
+                    bottom: 2.5vh; /* Ajuste el botón un poco arriba */
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background-color: #444; /* Botón gris oscuro */
+                    color: #fff;
+                    border: none;
+                    padding: 0.5vh 2vw; /* Tamaño proporcional para el botón */
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-size: 1.5vw; /* Tamaño de fuente relativo al ancho de la pantalla */
+                    font-family: Arial, sans-serif;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                }
+
+                #memory-toggle-button:hover {
+                    background-color: #555;
+                }
+            `;
+
+            document.head.appendChild(styles);
+
+
+        // Contenedor principal
+        const memoryContainer = document.createElement("div");
+        memoryContainer.id = "memory-container";
+
+        // Crear el cuadro para mostrar la memoria
+        const memoryBox = document.createElement("div");
+        memoryBox.id = "memory-box"; // Este es el contenedor donde se mostrarán los datos
+        memoryContainer.appendChild(memoryBox);
+
+        // Botón para alternar visibilidad
+        const toggleButtonram = document.createElement("button");
+        toggleButtonram.id = "memory-toggle-button";
+        toggleButtonram.textContent = "Mostrar Memoria RAM";
+        toggleButtonram.onclick = toggleMemoryBox;
+
+        document.body.appendChild(memoryContainer);
+        document.body.appendChild(toggleButtonram);
+
+        // Simulación de inserción de datos
+        //ram.saveData("000001", "AABBCCDD");
+        //ram.saveData("000002", "12345678");
+        //ram.saveData("000003", "FFEEDDCC");
+        //ram.saveData("000004", "AABBCCDD");
+        //ram.saveData("000005", "12345678");
+        //ram.saveData("000006", "FFEEDDCC");
+        //ram.saveData("000007", "AABBCCDD");
+        //ram.saveData("00000C", "12345678");
+        //ram.saveData("000090", "FFEEDDCC");
+        //ram.saveData("00000B", "FFEEDDCC");
+
+
+
+
+
+        // VISUALIZACIÖN CUADRO DE REGISTROS-----------------------------------------------------------------------------------------------------
+            function resetRegistersData() {// Resetea la lista de los registro 
+                Registros.forEach(register => {
+                    register.Data = "0x00000000"; // Resetea solo el campo Data 
+                });
+                console.log("Datos de los registros reseteados.");
+            }
+        // Crear contenedor principal para el cuadro y el botón
+        const container = document.createElement('div');
+        container.style.position = 'fixed';
+        container.style.bottom = '10vw';
+        container.style.right = '2vh';
+        container.style.width = '10vw';
+        container.style.height = '15vh';
+        container.style.boxSizing = 'border-box';
+        document.body.appendChild(container);
+
+        // Crear el cuadro negro semitransparente
+        const registrosContainer = document.createElement('div');
+        registrosContainer.style.width = '70%';
+        registrosContainer.style.height = '140%';
+        registrosContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        registrosContainer.style.color = 'white';
+        registrosContainer.style.overflowY = 'auto';
+        registrosContainer.style.padding = '1vw';
+        registrosContainer.style.fontFamily = 'monospace';
+        registrosContainer.style.border = '1px solid white';
+        container.appendChild(registrosContainer);
+
+        // Crear el botón de ocultar/mostrar
+        const toggleButtonRegistro = document.createElement('button');
+        toggleButtonRegistro.textContent = 'Ocultar';
+        toggleButtonRegistro.style.position = 'absolute';
+        toggleButtonRegistro.style.top = '26vh';
+        toggleButtonRegistro.style.right = '3vw';
+        toggleButtonRegistro.style.padding = '1vh 1vw';
+        toggleButtonRegistro.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+        toggleButtonRegistro.style.color = 'white';
+        toggleButtonRegistro.style.border = '1px solid white';
+        toggleButtonRegistro.style.cursor = 'pointer';
+        toggleButtonRegistro.style.borderRadius = '5px';
+        toggleButtonRegistro.style.fontFamily = 'monospace';
+        toggleButtonRegistro.style.zIndex = '1000';
+        container.appendChild(toggleButtonRegistro);
+
+        // Función para actualizar la visualización de los registros
+        function updateRegistrosView() {
+            registrosContainer.innerHTML = ""; // Limpia el contenido actual
+            Registros.sort((a, b) => a.Slot - b.Slot).forEach(registro => {
+                const registroElement = document.createElement('div');
+                registroElement.textContent = `${registro.id}: ${registro.Data}`;
+                registroElement.style.marginBottom = '5px'; // Espaciado entre registros
+                registrosContainer.appendChild(registroElement);
+            });
+        }
+
+        // Inicializar la visualización de registros
+        updateRegistrosView();
+
+        // Lógica del botón para ocultar/mostrar el cuadro
+        toggleButtonRegistro.addEventListener('click', () => {
+            if (registrosContainer.style.display === 'none') {
+                registrosContainer.style.display = 'block';
+                toggleButtonRegistro.textContent = 'Ocultar';
+            } else {
+                registrosContainer.style.display = 'none';
+                toggleButtonRegistro.textContent = 'Mostrar';
+            }
+        });
+
+
+        
+
+
+            // VISUALIZACIÖN CUADRO DE INSTRUCCION-----------------------------------------------------------------------------------------------------
+            // Crear y añadir los estilos dinámicamente
+            const style = document.createElement("style");
+            style.textContent = `
+                #instructions-container {
+                    position: absolute;
+                    top: 0.5vh; /* Proporcional a la altura de la pantalla */
+                    right: 0.5vw; /* Proporcional al ancho de la pantalla */
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-end;
+                    gap: 1vh; /* Espacio entre botón y cuadro proporcional */
+                }
+
+                #instructions-box {
+                    width: 15vw; /* % del ancho de la pantalla */
+                    height: 15vh; /* % de la altura de la pantalla */
+                    background-color: rgba(0, 0, 0, 0.8); /* Fondo negro semitransparente */
+                    padding: 2vh; /* Espaciado interno proporcional */
+                    border-radius: 1vw; /* Bordes redondeados proporcionales */
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+                    overflow-y: auto; /* Scroll vertical */
+                    overflow-x: hidden; /* Ocultar el scroll horizontal */
+                    display: flex;
+                    flex-direction: column; /* Asegurar que las instrucciones se apilen verticalmente */
+                    gap: 1vh; /* Espacio entre celdas proporcional */
+                }
+
+                #instructions-box::-webkit-scrollbar {
+                    width: 0.8vw; /* Ancho del scroll proporcional */
+                }
+
+                #instructions-box::-webkit-scrollbar-thumb {
+                    background: #555; /* Color del scroll */
+                    border-radius: 4px;
+                }
+
+                #instructions-box::-webkit-scrollbar-thumb:hover {
+                    background: #777; /* Color al pasar el mouse */
+                }
+
+                .instruction {
+                    width: 92%; /* Ocupa todo el ancho del cuadro */
+                    display: flex;
+                    justify-content: space-between; /* Espacio entre texto y botón */
+                    align-items: center;
+                    background-color: #000; /* Fondo negro opaco */
+                    color: #fff; /* Texto blanco */
+                    padding: 1vh; /* Espaciado interno proporcional */
+                    border-radius: 0.5vw; /* Bordes redondeados proporcionales */
+                    font-family: monospace; /* Fuente monoespaciada */
+                    font-size: 0.8vw; /* Tamaño de fuente proporcional */
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* Sombra para resaltar */
+                }
+
+                .delete-button {
+                    background-color: red; /* Botón rojo */
+                    color: #fff; /* Texto blanco */
+                    border: none;
+                    padding: 0.5vh 0.8vw; /* Tamaño del botón proporcional */
+                    border-radius: 0.3vw; /* Bordes redondeados proporcionales */
+                    cursor: pointer;
+                    font-size: 0.8vw; /* Tamaño de fuente proporcional */
+                    font-family: monospace;
+                }
+
+                .delete-button:hover {
+                    background-color: darkred; /* Rojo más oscuro al pasar el mouse */
+                }
+
+                #toggle-button {
+                    background-color: #444; /* Botón gris oscuro */
+                    color: #fff; /* Texto blanco */
+                    border: none;
+                    padding: 0.8vh 0.9vw; /* Tamaño del botón proporcional */
+                    border-radius: 0.3vw; /* Bordes redondeados proporcionales */
+                    cursor: pointer;
+                    font-size: 1vw; /* Tamaño de fuente proporcional */
+                    font-family: monospace;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                }
+
+                #toggle-button:hover {
+                    background-color: #555; /* Más claro al pasar el mouse */
+                }
+            `;
+            document.head.appendChild(style);
+
+
+            // Array inicial de instrucciones MIPS en hexadecimal
+            const mipsInstructions = [
+                "0x00000000"
+            ];
+
+            // Crear el contenedor para el cuadro y el botón
+            const instructionsContainer = document.createElement("div");
+            instructionsContainer.id = "instructions-container";
+            document.body.appendChild(instructionsContainer);
+
+            // Crear el cuadro de instrucciones
+            const instructionsBox = document.createElement("div");
+            instructionsBox.id = "instructions-box";
+            instructionsContainer.appendChild(instructionsBox);
+
+            // Renderizar las instrucciones en el cuadro
+            function renderInstructions() {
+                instructionsBox.innerHTML = ""; // Limpiar el cuadro antes de renderizar
+                mipsInstructions.forEach((instruction, index) => {
+                    const div = document.createElement("div");
+                    div.classList.add("instruction");
+
+                    const span = document.createElement("span");
+                    span.textContent = instruction;
+
+                    const deleteButton = document.createElement("button");
+                    deleteButton.textContent = "Eliminar";
+                    deleteButton.classList.add("delete-button");
+                    deleteButton.addEventListener("click", () => {
+                        mipsInstructions.splice(index, 1); // Eliminar de la lista
+                        renderInstructions(); // Actualizar la visualización
+                    });
+
+                    div.appendChild(span);
+                    div.appendChild(deleteButton);
+                    instructionsBox.appendChild(div);
+                });
+            }
+
+            // Renderizar las instrucciones iniciales
+            renderInstructions();
+
+            // Crear el botón de ocultar/mostrar
+            const toggleButton = document.createElement("button");
+            toggleButton.id = "toggle-button";
+            toggleButton.textContent = "Ocultar";
+            instructionsContainer.appendChild(toggleButton);
+
+            // Agregar funcionalidad al botón
+            toggleButton.addEventListener("click", () => {
+                const isHidden = instructionsBox.style.display === "none";
+                instructionsBox.style.display = isHidden ? "flex" : "none";
+                toggleButton.textContent = isHidden ? "Ocultar" : "Mostrar";
+            });
+
+            // Agregar funcionalidad de arrastrar archivo
+            instructionsBox.addEventListener("dragover", (event) => {
+                event.preventDefault();
+                instructionsBox.style.backgroundColor = "rgba(0, 0, 0, 0.9)"; // Resaltar cuadro
+            });
+
+            instructionsBox.addEventListener("dragleave", () => {
+                instructionsBox.style.backgroundColor = "rgba(0, 0, 0, 0.8)"; // Restaurar color
+            });
+
+            instructionsBox.addEventListener("drop", (event) => {
+                event.preventDefault();
+                instructionsBox.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+
+                const file = event.dataTransfer.files[0];
+                if (file && file.type === "text/plain") {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const lines = reader.result.split("\n");
+                        const validLines = lines.filter((line) => /^0x[0-9A-Fa-f]{8}$/.test(line.trim()));
+
+                        if (validLines.length) {
+                            mipsInstructions.push(...validLines);
+                            renderInstructions();
+                        } else {
+                            alert("El archivo no contiene instrucciones MIPS válidas.");
+                        }
+                    };
+                    reader.readAsText(file);
+                } else {
+                    alert("Por favor, arrastra un archivo de texto válido.");
+                }
+            });
+
+            // END VISUALIZACIÖN CUADRO DE INSTRUCCION-----------------------------------------------------------------------------------------------------
+
+            
+
+            // LOGICAS DE LOS COMPONENTE DEL MIPS-----------------------------------------------------------------------------------------------------
+            function PC(){
+                //Registro
+                const PC = boxes.find(node => node.id === "PC")
+                // in
+                const Jump = nodes.find(node => node.id === "JumpPC");
+                Jump.Estados = nodes.find(node => node.id === links.find(node => node.target === Jump.id).source).Estados;
+
+                const JumpAdd = nodes.find(node => node.id === "JumpAddPC");
+                JumpAdd.Estados = nodes.find(node => node.id === links.find(node => node.target === JumpAdd.id).source).Estados;
+                
+                const Imm = nodes.find(node => node.id === "ImmPC");
+                Imm.Estados = nodes.find(node => node.id === links.find(node => node.target === Imm.id).source).Estados;
+
+                const Bne = nodes.find(node => node.id === "BnePC");
+                Bne.Estados = nodes.find(node => node.id === links.find(node => node.target === Bne.id).source).Estados;
+
+                const Beq = nodes.find(node => node.id === "BeqPC");
+                Beq.Estados = nodes.find(node => node.id === links.find(node => node.target === Beq.id).source).Estados;
+
+                const Zero = nodes.find(node => node.id === "ZeroPC");
+                Zero.Estados = nodes.find(node => node.id === links.find(node => node.target === Zero.id).source).Estados;
+                // out (tambien in)
+                const Address = nodes.find(node => node.id === "PC1Address");
+                
+
+                let ImmA = Imm.Estados.slice(0,9);
+                let ImmB = Imm.Estados.slice(-1);
+
+                let Suma = parseInt(ImmA,16) + parseInt(Address.Estados,16)+1
+                let Resta = -parseInt(ImmA,16) + parseInt(Address.Estados,16)+1
+                let SeleccionMux1 = 0;
+                if(parseInt(ImmB,16) === parseInt("1",16)){SeleccionMux1 = 1}
+
+                let And1 = parseInt(Bne.Estados, 16) === parseInt("1", 16) && parseInt(Zero.Estados, 16) === parseInt("0", 16);
+                let And2 = parseInt(Beq.Estados, 16) === parseInt("1", 16) && parseInt(Zero.Estados, 16) === parseInt("1", 16);
+                let SeleccionMux2 = 0;
+                if(And1 || And2){SeleccionMux2 = 1;}
+
+                let ValorMux = parseInt(PC.Registro,16) + 1;
+                 if(SeleccionMux2 === 1){       
+                        ValorMux === Suma;
+                     if(SeleccionMux1 === 1){
+                        ValorMux === Resta;
+                    }
+                }
+                //console.log(`${ValorMux},${PC.clock},${PC.Registro},${Address.Estados}`);
+
+                if(PC.reset){
+                    PC.Registro = 0;
+                    PC.reset = false;
+                }else if(PC.clock || PC.clockBlock){
+                    PC.Registro = ValorMux;
+                    if(parseInt(Jump.Estados, 16) === parseInt("1",16)){
+                        PC.Registro = parseInt(JumpAdd.Estados, 16);
+                    }
+                    PC.clock = false;
+                }
+                let Registro = HexaConvert(PC.Registro);
+                //console.log(`${Registro}`);
+                Address.Estados = PC.Registro 
+            }
+            
+
+
+
+
+
+            // Función que simula la memoria
+            function Memoria() {
+                const MemorySelect = boxes.find(node => node.id === "Memory1")
+                // in
+                const addressNode = nodes.find(node => node.id === "AddressMem1");
+                addressNode.Estados = nodes.find(node => node.id === links.find(node => node.target === addressNode.id).source).Estados;
+                // out
+                const dataNode = nodes.find(node => node.id === "DataMem1");
+
+                // Verificar si ambos nodos existen
+                if (addressNode && dataNode) {
+                    const addressValue = parseInt(addressNode.Estados, 16); // Convertir el estado de AddressMem1 a número hexadecimal
+
+                    // Verificar si el valor de AddressMem1 es un índice válido en la lista de instrucciones
+                    if (addressValue >= 0 && addressValue < mipsInstructions.length) {
+                        // Si es un índice válido, actualizar el estado de DataMem1 con la instrucción correspondiente
+                        dataNode.Estados = mipsInstructions[addressValue];
+                    } else {
+                        // Si el valor no es válido (fuera de rango), establecer el estado de DataMem1 a "0x00000000"
+                        dataNode.Estados = "0x00000000";
+                    }
+
+                   
+                    console.log(`Estado de DataMem: ${dataNode.Estados},  ${addressNode.Estados}`);
+                } else {
+                    console.log("No se encontraron los nodos necesarios.");
+                }
+            }
+
+            function Decode(){
+                const Decode = boxes.find(node => node.id === "ID");
+                // in
+                const instructions = nodes.find(node => node.id === "Instruction") 
+                instructions.Estados = nodes.find(node => node.id === links.find(node => node.target === instructions.id).source).Estados;
+                // Out
+                const JumpAddD = nodes.find(node => node.id === "JumpAdd");
+                const Imme = nodes.find(node => node.id === "Immediate");
+                const Func = nodes.find(node => node.id === "Func");
+                const Sham = nodes.find(node => node.id === "Sham");
+                const RD = nodes.find(node => node.id === "rd");
+                const RS = nodes.find(node => node.id === "Rs");
+                const RT = nodes.find(node => node.id === "Rt");
+                const OPCode = nodes.find(node => node.id === "OPCode");
+                //const ImmA = Imm.Estados.slice(0,9);
+                //let insbinde = hexadecimalABinario(instructions.Estados)
+                let insbin = hexadecimalABinario(instructions.Estados).split('').reverse().join('');
+
+                JumpAddD.Estados = HexaConvert(parseInt(insbin.slice(0,26).split('').reverse().join(''), 2));
+                Imme.Estados = HexaConvert(parseInt(insbin.slice(0,16).split('').reverse().join(''), 2));
+                Func.Estados = HexaConvert(parseInt(insbin.slice(0,6).split('').reverse().join(''), 2));
+                Sham.Estados = HexaConvert(parseInt(insbin.slice(6,11).split('').reverse().join(''), 2));
+                RD.Estados = HexaConvert(parseInt(insbin.slice(11,16).split('').reverse().join(''), 2));
+                RS.Estados = HexaConvert(parseInt(insbin.slice(21,26).split('').reverse().join(''), 2));
+                RT.Estados = HexaConvert(parseInt(insbin.slice(16,21).split('').reverse().join(''), 2));
+                OPCode.Estados = HexaConvert(parseInt(insbin.slice(26,32).split('').reverse().join(''), 2));
+
+                //console.log(`insbinde: ${insbinde},insbin: ${insbin},insbin: ${(insbin.slice(0,6)).split('').reverse().join('')}, Func: ${Func.Estados}, Sham: ${Sham.Estados}, Rd: ${RD.Estados}, Rs: ${RS.Estados}, Rt: ${RT.Estados}, OPCode: ${OPCode.Estados}, JumpAdd: ${JumpAddD.Estados}, Immediate: ${Imme.Estados},`);
+
+            }
+
+            function UnitControl(){
+                const UC = boxes.find(boxe => boxe.id === "Unit Control");
+                //in
+                const OPcode = nodes.find(node => node.id === "OPcode");
+                OPcode.Estados = nodes.find(node => node.id === links.find(node => node.target === OPcode.id).source).Estados;
+                //Out
+                const Regdst = nodes.find(node => node.id === "Regdst");
+                const RegWrite = nodes.find(node => node.id === "RegWrite");
+                const Jump = nodes.find(node => node.id === "Jump");
+                const Beq = nodes.find(node => node.id === "Beq");
+                const Bne = nodes.find(node => node.id === "Bne");
+                const Alusrc = nodes.find(node => node.id === "Alusrc");
+                const MemToReg = nodes.find(node => node.id === "MemToReg");
+                const MemRead = nodes.find(node => node.id === "MemRead");
+                const MemWrite = nodes.find(node => node.id === "MemWrite");
+                const AluOP1 = nodes.find(node => node.id === "AluOP1");
+                const AluOP2 = nodes.find(node => node.id === "AluOP2");
+
+                CodeBinario = hexadecimalABinario(OPcode.Estados,6);
+
+                let UC1 = CodeBinario.slice(5,6);
+                let UC2 = CodeBinario.slice(4,5);
+                let UC3 = CodeBinario.slice(3,4);
+                let UC4 = CodeBinario.slice(2,3);
+                let UC5 = CodeBinario.slice(1,2);
+                let UC6 = CodeBinario.slice(0,1);
+
+                if(UC2 == 0 && UC3 == 0 && UC4 == 0)
+                {
+                    Regdst.Estados=HexaConvert(1);
+                }
+                else{
+                    Regdst.Estados=HexaConvert(0);
+                }
+                if ((UC3 == 0 && UC2 == 0) || (UC6 == 1 && UC4 == 0))
+                {
+                    RegWrite.Estados=HexaConvert(1);
+                }
+                else{
+                    RegWrite.Estados=HexaConvert(0);
+                }
+                if (UC2 == 1 && UC1 == 0)
+                {
+                    Jump.Estados=HexaConvert(1);
+                }
+                else{
+                    Jump.Estados=HexaConvert(0);
+                };
+                if (UC3 == 1 && UC1 == 0)
+                {
+                    Beq.Estados=HexaConvert(1);
+                }
+                else{
+                    Beq.Estados=HexaConvert(0);
+                };
+                if (UC1 ==1 && UC2 == 0)
+                {
+                    Bne.Estados=HexaConvert(1);
+                }
+                else{
+                    Bne.Estados=HexaConvert(0);
+                };
+                if ((UC3 == 0 && UC1 == 1)||(UC4 == 1 && UC3 == 0))
+                {
+                    Alusrc.Estados=HexaConvert(1);
+                }
+                else{
+                    Alusrc.Estados=HexaConvert(0);
+                };
+                if (UC6 == 1 && UC4 == 0)
+                {
+                    MemToReg.Estados=HexaConvert(1);
+                }
+                else{
+                    MemToReg.Estados=HexaConvert(0);
+                };
+                if (UC6 == 1 && UC4 == 0)
+                {
+                    MemRead.Estados=HexaConvert(1);
+                }
+                else{
+                    MemRead.Estados=HexaConvert(0);
+                };
+                if (UC4 == 1 && UC3 == 0 && UC1 == 1)
+                {
+                    MemWrite.Estados=HexaConvert(1);
+                }
+                else{
+                    MemWrite.Estados=HexaConvert(0);
+                };
+                if (UC4 == 0 && UC3 == 0 && UC2 == 0)
+                {
+                    AluOP1.Estados=HexaConvert(1);
+                }
+                else{
+                    AluOP1.Estados=HexaConvert(0);
+                };
+                if (UC4 == 0 && UC3 == 1)
+                {
+                    AluOP2.Estados=HexaConvert(1);
+                }
+                else{
+                    AluOP2.Estados=HexaConvert(0);
+                };
+                //console.log(`OPCODE: ${OPcode.Estados}, CB ${CodeBinario} `);
+                //console.log(`UC1: ${UC1}, UC2: ${UC2}, UC3: ${UC3}, UC4: ${UC4}, UC5: ${UC5}, UC6: ${UC6}`);
+                //console.log(`Regdst: ${Regdst.Estados}, RegWrite: ${RegWrite.Estados}, Jump: ${Jump.Estados}, Beq: ${Beq.Estados}, Bne: ${Bne.Estados}, Alusrc: ${Alusrc.Estados}, MemToReg: ${MemToReg.Estados}, MemRead: ${MemRead.Estados}, MemWrite: ${MemWrite.Estados}, AluOP1: ${AluOP1.Estados}, AluOP2: ${AluOP2.Estados}`);
+                
+                
+                
+                
+            }
+            function Alusrc(){
+                const UnitRegistre = boxes.find(box => box.id === "Alu Unit Control");
+                //in
+                const Func = nodes.find(node => node.id === "func");
+                Func.Estados = nodes.find(node => node.id === links.find(node => node.target === Func.id).source).Estados; 
+                const AluOp1 = nodes.find(node => node.id === "Aluop1");
+                AluOp1.Estados = nodes.find(node => node.id === links.find(node => node.target === AluOp1.id).source).Estados; 
+                const AluOp2 = nodes.find(node => node.id === "Aluop2");
+                AluOp2.Estados = nodes.find(node => node.id === links.find(node => node.target === AluOp2.id).source).Estados; 
+                // Out
+                const OutAlu = nodes.find(node => node.id === "Out");
+                let Result = 0;
+                CodeBinario = hexadecimalABinario(Func.Estados,6);
+                const UC1 = CodeBinario.slice(5,6);
+                const UC2 = CodeBinario.slice(4,5);
+                const UC3 = CodeBinario.slice(3,4);
+                const UC4 = CodeBinario.slice(2,3);
+                const UC5 = CodeBinario.slice(1,2);
+                const UC6 = CodeBinario.slice(0,1);
+
+                const Alu1 = parseInt(AluOp1.Estados,16);
+                const Alu2 = parseInt(AluOp2.Estados,16);
+
+                const And1 = (Alu1 && UC6 == 0);
+                const And2 = (Alu1 && UC1 == 1);
+                const And3 = (Alu1 && UC2 == 1);
+                const And4 = (Alu1 && UC4 == 1);
+                const And5 = (Alu1 && UC5 == 1);
+
+                if(And1 || And2 || And3 || And4 || And5 || Alu2 == 1){
+                     Result = 1;
+                }else {
+                     Result = 0;
+                }
+
+                if(Alu1 == 0 || UC6 == 0 || UC3 == 0 || UC2 == 1 || UC4 == 1 || UC5 == 1 || Alu2 == 1){
+                    Result += 2;
+                }else{
+                    Result += 0;
+                }
+
+                OutAlu.Estados = HexaConvert(Result);
+
+            }
+
+            function Mux(InA,InB,Select, Out){
+                Select.Estados = InA.Estados = nodes.find(node => node.id === links.find(node => node.target === Select.id).source).Estados;
+                //console.log(`0: ${InA.id}, 1: ${InB.id}`);
+                switch (parseInt(Select.Estados,16)){
+                    case 0: 
+                        InA.Estados = nodes.find(node => node.id === links.find(node => node.target === InA.id).source).Estados;
+                        Out.Estados = InA.Estados;
+                        console.log(`0: ${Out.Estados}, Select to: ${Select.id}`);
+                        break;
+                    case 1:
+                        InB.Estados = nodes.find(node => node.id === links.find(node => node.target === InB.id).source).Estados;
+                        Out.Estados = InB.Estados;
+                        console.log(`1: ${Out.Estados}, Select to: ${Select.id}`);
+                        break;
+                    default:
+                        console.log(`Error Funcion Mux: ${Select.id} value: ${parseInt(Select.Estados,16)}`);
+                        break;
+                   
+                }
+                 //console.log(`${Out.Estados}`);
+            }
+            function UnitRegistre(A){
+                const UnitRegistre = boxes.find(box => box.id === "Unit registre");
+                //in
+                const Regwrite = nodes.find(node => node.id === "Regwrite");
+                Regwrite.Estados = nodes.find(node => node.id === links.find(node => node.target === Regwrite.id).source).Estados;
+                const RS = nodes.find(node => node.id === "rs");
+                RS.Estados = nodes.find(node => node.id === links.find(node => node.target === RS.id).source).Estados;
+                const RT = nodes.find(node => node.id === "rt");
+                RT.Estados = nodes.find(node => node.id === links.find(node => node.target === RT.id).source).Estados;
+                const DataIn = nodes.find(node => node.id === "DataIn");
+                DataIn.Estados = nodes.find(node => node.id === links.find(node => node.target === DataIn.id).source).Estados;
+                const Bus = nodes.find(node => node.id === "BusWrite");
+                Bus.Estados = nodes.find(node => node.id === links.find(node => node.target === Bus.id).source).Estados;
+                //out
+                const BusA = nodes.find(node => node.id === "BusA");
+                const BusB = nodes.find(node => node.id === "BusB");
+                let RegWriter = null;
+                
+
+                switch (A){
+                case 0:
+                    if(parseInt(Regwrite.Estados,16) == 1){
+                        console.log(`get registro de ${Bus.id}: ${Bus.Estados} ,${(parseInt(Bus.Estados,16))}`);
+                        RegWriter = Registros.find(registro => registro.Slot === parseInt(Bus.Estados,16));
+                    }
+                    console.log(`RegWriter Comparation: ${RegWriter} ,${(RegWriter != null)}`);
+                    if(UnitRegistre.reset){
+                        resetRegistersData();
+                        updateRegistrosView();
+                        UnitRegistre.reset = false;
+                    }else if(UnitRegistre.clock || UnitRegistre.clockBlock){
+                        if(RegWriter != null){
+                            RegWriter.Data = DataIn.Estados;
+                            console.log(`RegWriter: ${RegWriter.id}, Valor ${RegWriter.Data}, Dataget: ${DataIn.id}, Valorget ${DataIn.Estados}`);
+                        }
+                        updateRegistrosView();
+                        UnitRegistre.clock = false;
+                    }
+                    
+                 break;
+                case 1:
+
+                BusA.Estados = Registros.find(registro => registro.Slot === parseInt(RS.Estados)).Data;
+                BusB.Estados = Registros.find(registro => registro.Slot === parseInt(RT.Estados)).Data;
+                console.log(`BusA: ${BusA.Estados}, BusB: ${(BusB.Estados)}`);
+                break;
+                }
+            }
+
+
+            function Alu(){
+                const Alu = boxes.find(box => box.id === "ALU");
+                //In
+                const BusA = nodes.find(node => node.id === "BusAIn");
+                BusA.Estados = nodes.find(node => node.id === links.find(node => node.target === BusA.id).source).Estados;
+                const BusB = nodes.find(node => node.id === "BusBIn");
+                BusB.Estados = nodes.find(node => node.id === links.find(node => node.target === BusB.id).source).Estados;
+                const AluControl = nodes.find(node => node.id === "AluControl");
+                AluControl.Estados = nodes.find(node => node.id === links.find(node => node.target === AluControl.id).source).Estados;
+                //Out
+                const Result = nodes.find(node => node.id === "AluResult");
+                const Zero = nodes.find(node => node.id === "Zero");
+
+                let OP1 = parseInt(BusA.Estados,16);
+                let OP2 = parseInt(BusB.Estados,16);
+                let AControl = parseInt(AluControl.Estados,16);
+                let getResult = "0x00000000"; 
+                switch(AControl){
+                    case 0:
+                    if(OP1 == 1 && OP2 == 2){
+                        getResult = HexaConvert(1);
+                    }else{
+                        getResult = HexaConvert(0);
+                    }
+                    break;
+                    case 1:
+                    if(OP1 == 1 || OP2 == 2){
+                        getResult = HexaConvert(1);
+                    }else{
+                        getResult = HexaConvert(0);
+                    }
+                    break;
+                    case 2:
+                        Suma = OP1 + OP2;
+                        console.log(Suma);
+                        getResult = HexaConvert(Suma);
+                        console.log(HexaConvert(Suma));
+                    break;
+                    case 3:
+                    break;
+                        Resta = OP1 + OP2;
+                        console.log(Resta);
+                        getResult = HexaConvert(Resta);
+                        console.log(HexaConvert(Resta));
+                    default:
+                        console.log("Error Seleccion de Alu");
+                    break;
+                }
+                if(parseInt(getResult) == 0){
+                    Zero.Estados = HexaConvert(1);
+                }else{
+                    Zero.Estados = HexaConvert(0);
+                }
+                Result.Estados = getResult;
+            }
+            function RAMFuntion(){
+                const MemoryRam = boxes.find(box => box.id === "Memory2");
+                //In
+                const Address = nodes.find(node => node.id === "AddresMem2");
+                Address.Estados = nodes.find(node => node.id === links.find(node => node.target === Address.id).source).Estados;
+                const RegWrites = nodes.find(node => node.id === "Rewrite");
+                RegWrites.Estados = nodes.find(node => node.id === links.find(node => node.target === RegWrites.id).source).Estados;
+                const DataIn = nodes.find(node => node.id === "DataInMem");
+                DataIn.Estados = nodes.find(node => node.id === links.find(node => node.target === DataIn.id).source).Estados;
+                //Out
+                const OutMemory = nodes.find(node => node.id === "DataOutMem");
+                if(MemoryRam.reset){
+                    ram.resetMemory();
+                    MemoryRam.reset = false;
+                }else if(MemoryRam.clock || MemoryRam.clockBlock){
+                    if(parseInt(RegWrites.Estados,16) == 1){
+                        ram.saveData(Address.Estados, DataIn.Estados);
+                    }
+
+                    OutMemory.Estados = ram.readData(Address.Estados);
+                    //console.log(`Ram ID: ${}, Value: ${}, `);
+                    MemoryRam.clock = false;
+                }
+
+            }
+
+            // OTROS ELEMENTOS -----------------------------------------------------------------------------------------------------
+            // Crear los botones
+            const botonesContainer = document.createElement("div");
+            botonesContainer.style.position = "absolute";
+            botonesContainer.style.bottom = "20px";
+            botonesContainer.style.left = "20px";
+            botonesContainer.style.display = "flex";
+            botonesContainer.style.gap = "10px";
+            document.body.appendChild(botonesContainer);
+
+            // Botón de Clock
+            const clockButton = document.createElement("button");
+            clockButton.textContent = "Clock";
+            clockButton.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+            clockButton.style.color = "white";
+            clockButton.style.border = "2px solid transparent";
+            clockButton.style.borderRadius = "5px";
+            clockButton.style.padding = "10px 20px";
+            clockButton.style.cursor = "pointer";
+            clockButton.style.transition = "border-color 0.3s";
+            botonesContainer.appendChild(clockButton);
+
+            // Botón de Reset
+            const resetButton = document.createElement("button");
+            resetButton.textContent = "Reset";
+            resetButton.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+            resetButton.style.color = "white";
+            resetButton.style.border = "2px solid transparent";
+            resetButton.style.borderRadius = "5px";
+            resetButton.style.padding = "10px 20px";
+            resetButton.style.cursor = "pointer";
+            resetButton.style.transition = "border-color 0.3s";
+            botonesContainer.appendChild(resetButton);
+
+            // Función para actualizar el estilo de los botones
+            function actualizarBotones() {
+                const clockActive = boxes.some(box => box.clock === true);
+                const resetActive = boxes.some(box => box.reset === true);
+
+                clockButton.style.borderColor = clockActive ? "limegreen" : "transparent";
+                resetButton.style.borderColor = resetActive ? "limegreen" : "transparent";
+            }
+
+            // Event listener para el botón de Clock
+            clockButton.addEventListener("click", () => {
+                boxes.forEach(box => {
+                    if (box.hasOwnProperty("clock")) {
+                        box.clock = true;
+                    }
+                });
+                actualizarBotones();
+            });
+
+            // Event listener para el botón de Reset
+            resetButton.addEventListener("click", () => {
+                boxes.forEach(box => {
+                    if (box.hasOwnProperty("reset")) {
+                        box.reset = true;
+                    }
+                });
+                actualizarBotones();
+            });
+
+            // Inicializar los estilos de los botones
+            actualizarBotones();
+
+
+        
+            
+
+
+
+
+
+
+        //Runnable
+        function ConstanRun(){           
+            Memoria();
+            Decode();
+            UnitControl();
+            Mux(nodes.find(node => node.id === "Muxrt:0"), nodes.find(node => node.id === "Muxrs:1"), nodes.find(node => node.id === "SelectorRtRs"),nodes.find(node => node.id === "OutMuxRtRs"));
+            UnitRegistre(1);
+            Mux(nodes.find(node => node.id === "Mux:0"),nodes.find(node => node.id === "Mux:1"),nodes.find(node => node.id === "Selector"),nodes.find(node => node.id === "OutMuxAlu"));
+            Alusrc();
+            Alu();
+            RAMFuntion();
+            Mux(nodes.find(node => node.id === "MuxAluResult:0"),nodes.find(node => node.id === "MuxData:1"),nodes.find(node => node.id === "SelectorMem2"),nodes.find(node => node.id === "OutMuxMem2"));   
+            UnitRegistre(0);
+            PC();
+
+
+            drawLinks(links);
+            actualizarBotones();
+        }
+
+
+        function RunEst(){
+            drawLinks(links);// Dibuja las líneas inicialmente
+            ConstanRun();
+        }
+
+
+
+
+        // MODIFICACIONES ADICIONALES ------------------------------------------------------------------------------------------- 
+        RunEst();
+
+        // Simulación:  cada 2 segundos
+        setInterval(() => {
+            //ActNode("PC1Address", 3, 1); 
+            ConstanRun();
+        }, 1000);
+
+
+        
+        
+        const zoom = d3.zoom()
+        .scaleExtent([0.5, 4])
+        .on("zoom", (event) => {
+            mainGroup.attr("transform", event.transform);
+        });
+
+        svg.call(zoom);
+
+
+
+
+        // Habilita el arrastre sincronizado con zoom
+        let currentTransform = { x: 0, y: 0, k: 1 }; // Incluye escala (k)
+        svg.call(d3.drag()
+            .on("start", function () {
+                d3.select(this).attr("cursor", "grabbing");
+            })
+            .on("drag", function (event) {
+                // Calcula nuevas coordenadas trasladas
+                currentTransform.x += event.dx;
+                currentTransform.y += event.dy;
+
+                // Aplica la traslación y escala actuales
+                mainGroup.attr(
+                    "transform",
+                    `translate(${currentTransform.x}, ${currentTransform.y}) scale(${currentTransform.k})`
+                );
+
+                // Actualiza el zoom internamente
+                zoom.translateBy(svg, event.dx / currentTransform.k, event.dy / currentTransform.k);
+            })
+            .on("end", function () {
+                d3.select(this).attr("cursor", "default");
+            })
+        );
+    </script>
+</body>
+</html>

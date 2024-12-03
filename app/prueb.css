@@ -1,0 +1,64 @@
+
+#mips-container {
+    display: flex;
+    margin-top: 50px;
+    position: relative;
+}
+
+.stage {
+    width: 100px;
+    height: 50px;
+    border: 2px solid black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 20px;
+    background-color: #f0f0f0;
+}
+
+#connections {
+    position: absolute;
+    top: 75px; 
+    width: 500px;
+    height: 100px;
+}
+
+/* Estilos básicos para el botón */
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+
+
+/* Cuadro de instrucciones */
+#instructions-box {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 25%; /* 1/4 del ancho de la pantalla */
+    height: 50%; /* 1/2 de la altura de la pantalla */
+    background-color: rgba(0, 0, 0, 0.8); /* Fondo negro semitransparente */
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    overflow-y: auto; /* Scroll si hay muchas instrucciones */
+    display: flex;
+    flex-wrap: wrap; /* Organizar en varias columnas */
+    align-content: flex-start; /* Iniciar en la parte superior */
+    gap: 8px; /* Espacio entre celdas */
+}
+
+/* Estilo de cada celda de instrucción */
+.instruction {
+    width: 45%; /* Ajusta el ancho de cada celda (dos por fila) */
+    background-color: #000; /* Fondo negro opaco */
+    color: #fff; /* Texto blanco */
+    padding: 10px;
+    border-radius: 5px;
+    font-family: monospace; /* Fuente monoespaciada */
+    font-size: 12px; /* Tamaño de fuente */
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* Sombra para resaltar */
+}
